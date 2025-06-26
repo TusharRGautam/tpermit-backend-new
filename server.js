@@ -7,13 +7,41 @@ const { supabaseClient } = require('./supabaseClient');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// OLD: Localhost-only CORS configuration (commented out)
+// app.use(cors({
+//   origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   credentials: true
+// }));
+
+// NEW: Production CORS configuration with domain support
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: [
+    'http://localhost:3000', 
+    'http://127.0.0.1:3000',
+    'https://aswcars.com',
+    'https://www.aswcars.com',
+    'https://backend.aswcars.com',
+    'http://aswcars.com',
+    'http://www.aswcars.com',
+    'http://backend.aswcars.com'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
+
+// Handle preflight requests explicitly
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.status(200).end();
+});
+
 app.use(express.json());
 
 // Test route to verify server is working
@@ -65,7 +93,18 @@ app.get('/api/test', (req, res) => {
   res.json({
     success: true,
     message: 'API is working!',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    domain: req.get('host'),
+    origin: req.get('origin')
+  });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
   });
 });
 
@@ -121,11 +160,25 @@ async function startServer() {
     const implementation = await invoiceFactory.autoDetectImplementation();
     console.log(`Using ${implementation} implementation for database access`);
     
-    // Start the server - listen on all interfaces instead of just localhost
+    // OLD: Localhost server configuration (commented out)
+    // app.listen(PORT, '0.0.0.0', () => {
+    //   console.log(`Server running on port ${PORT}`);
+    //   console.log(`API available at http://localhost:${PORT}/api`);
+    //   console.log(`API also available at http://192.168.0.102:${PORT}/api`);
+    //   
+    //   // After server has started, fetch and log all invoice and quotation data
+    //   fetchAndLogInvoiceData();
+    //   fetchAndLogQuotationData();
+    // });
+    
+    // NEW: Production server configuration
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`API available at http://localhost:${PORT}/api`);
-      console.log(`API also available at http://192.168.0.102:${PORT}/api`);
+      console.log(`🚀 ASW Backend Server running on port ${PORT}`);
+      console.log(`📡 API available at http://localhost:${PORT}/api`);
+      console.log(`🌐 Production API: https://backend.aswcars.com/api`);
+      console.log(`🔗 Frontend: https://aswcars.com`);
+      console.log(`✅ CORS enabled for: aswcars.com, www.aswcars.com, backend.aswcars.com`);
+      console.log(`🔄 Preflight requests handled for all routes`);
       
       // After server has started, fetch and log all invoice and quotation data
       fetchAndLogInvoiceData();
