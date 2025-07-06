@@ -174,7 +174,7 @@ async function insertSampleInvoice() {
     `, [
       invoiceId, 
       new Date().toISOString().split('T')[0], 
-      'Maruti Ertiga', 
+      'Maruti Suzuki ERTIGA', 
       'ZXI+',
       showroomCost,
       registration,

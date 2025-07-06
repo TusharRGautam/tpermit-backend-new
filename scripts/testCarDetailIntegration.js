@@ -9,13 +9,13 @@ async function testCarDetailIntegration() {
     const allQuotations = await quotationService.getAll();
     console.log(`✅ Found ${allQuotations.length} quotations in database\n`);
 
-    // Test car model filtering
+    // Test car model filtering - Updated with final car model names
     const testCarModels = [
-      'Maruti Suzuki Ertiga',
-      'Maruti Suzuki Dzire', 
       'Maruti Suzuki Wagon-R',
-      'Maruti Suzuki Rumion',
-      'Hyundai Aura',
+      'Maruti Suzuki ERTIGA',
+      'TOYOTA RUMION',
+      'HYUNDAI AURA',
+      'Maruti Suzuki Dzire',
       'Toyota Innova Crysta'
     ];
 
@@ -41,16 +41,16 @@ async function testCarDetailIntegration() {
 
     console.log('3. Testing car ID mapping...');
     const carIdMap = {
-      'maruti-suzuki-ertiga': 'Maruti Suzuki Ertiga',
-      'ertiga': 'Maruti Suzuki Ertiga',
-      'maruti-suzuki-dzire': 'Maruti Suzuki Dzire',
-      'dzire': 'Maruti Suzuki Dzire',
       'maruti-suzuki-wagon-r': 'Maruti Suzuki Wagon-R',
       'wagnor': 'Maruti Suzuki Wagon-R',
-      'maruti-suzuki-rumion': 'Maruti Suzuki Rumion',
-      'rumion': 'Maruti Suzuki Rumion',
-      'hyundai-aura': 'Hyundai Aura',
-      'aura': 'Hyundai Aura',
+      'maruti-suzuki-ertiga': 'Maruti Suzuki ERTIGA',
+      'ertiga': 'Maruti Suzuki ERTIGA',
+      'toyota-rumion': 'TOYOTA RUMION',
+      'rumion': 'TOYOTA RUMION',
+      'hyundai-aura': 'HYUNDAI AURA',
+      'aura': 'HYUNDAI AURA',
+      'maruti-suzuki-dzire': 'Maruti Suzuki Dzire',
+      'dzire': 'Maruti Suzuki Dzire',
       'toyota-innova-crysta': 'Toyota Innova Crysta',
       'crysta': 'Toyota Innova Crysta'
     };

@@ -49,7 +49,7 @@ INSERT INTO public.quotations (
   process_fee, stamp_duty, handling_document_charge, loan_suraksha_insurance,
   down_payment, offers, final_down_payment, emi_years, monthly_emi
 ) VALUES (
-  'VENDOR-001', 'Maruti Ertiga', 'ZXI+', 8.75,
+  'VENDOR-001', 'Maruti Suzuki ERTIGA', 'ZXI+', 8.75,
   8.50, 8.75, 9.00, 9.25,
   1050000.00, 10500.00, 85000.00, 35000.00,
   2500.00, 6000.00, 500.00, 1000.00,

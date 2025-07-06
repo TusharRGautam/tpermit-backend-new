@@ -32,7 +32,7 @@ async function createSampleInvoice() {
     const invoiceData = {
       id: invoiceId,
       date: new Date().toISOString().split('T')[0],
-      car_model: 'Maruti Ertiga',
+      car_model: 'Maruti Suzuki ERTIGA',
       variant: 'ZXI+',
       showroom_cost: showroomCost,
       registration: registration,

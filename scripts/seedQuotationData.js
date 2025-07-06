@@ -55,7 +55,7 @@ const carQuotationData = {
     }
   },
   'Maruti Suzuki Wagon-R': {
-    'Tour H': {
+    'Wagoner-R H3 CNG': {
       exShowroom: 597500,
       registration: 52000,
       insurance: 22000,
@@ -71,7 +71,7 @@ const carQuotationData = {
       offers: 10000,
       colors: ['White']
     },
-    'LXI CNG': {
+    'Wagoner-R LXI CNG': {
       exShowroom: 657500,
       registration: 55000,
       insurance: 24000,
@@ -87,7 +87,7 @@ const carQuotationData = {
       offers: 12000,
       colors: ['White', 'Silver', 'Grey', 'Red', 'Blue']
     },
-    'VXI CNG': {
+    'Wagoner-R VXI CNG': {
       exShowroom: 717500,
       registration: 58000,
       insurance: 26000,
@@ -123,7 +123,7 @@ const carQuotationData = {
     }
   },
   'Hyundai Aura': {
-    'E CNG': {
+    'Aura E CNG': {
       exShowroom: 797500,
       registration: 65000,
       insurance: 26000,
@@ -139,7 +139,7 @@ const carQuotationData = {
       offers: 12000,
       colors: ['White', 'Silver', 'Grey', 'Cherry Night']
     },
-    'S CNG': {
+    'Aura S CNG': {
       exShowroom: 857500,
       registration: 68000,
       insurance: 28000,
@@ -155,7 +155,7 @@ const carQuotationData = {
       offers: 15000,
       colors: ['White', 'Silver', 'Grey', 'Cherry Night']
     },
-    'SX CNG': {
+    'Aura SX CNG': {
       exShowroom: 917500,
       registration: 72000,
       insurance: 30000,
@@ -173,7 +173,7 @@ const carQuotationData = {
     }
   },
   'Toyota Innova Crysta': {
-    'GX Diesel': {
+    'Crysta GX': {
       exShowroom: 1797500,
       registration: 125000,
       insurance: 55000,
@@ -189,7 +189,7 @@ const carQuotationData = {
       offers: 40000,
       colors: ['White', 'Silver', 'Pearl White']
     },
-    'GXT Diesel': {
+    'Crysta GX+': {
       exShowroom: 1997500,
       registration: 135000,
       insurance: 60000,
@@ -205,7 +205,7 @@ const carQuotationData = {
       offers: 45000,
       colors: ['White', 'Silver', 'Pearl White']
     },
-    'VX Diesel': {
+    'Crysta VX': {
       exShowroom: 2097500,
       registration: 140000,
       insurance: 62000,
@@ -221,7 +221,7 @@ const carQuotationData = {
       offers: 50000,
       colors: ['White', 'Silver', 'Pearl White']
     },
-    'ZX Diesel': {
+    'Crysta ZX': {
       exShowroom: 2297500,
       registration: 150000,
       insurance: 68000,
@@ -298,112 +298,109 @@ function calculateLoanDetails(carModel, variant, bankType, carData, bankData) {
     // SBI: Ex-Showroom + TCS + Insurance + Registration
     loanBaseAmount = carData.exShowroom + tcs + carData.insurance + carData.registration;
   } else if (bankType === 'union') {
-    // Union Bank: Full On Road Price
-    loanBaseAmount = carData.exShowroom + tcs + carData.registration + carData.insurance + 
-                     carData.noPlate + carData.gps + carData.fastag + carData.speedGovernor + carData.accessories;
-  } else if (bankType === 'indusind' || bankType === 'au') {
-    // IndusInd & AU Bank: Ex-Showroom only
-    loanBaseAmount = carData.exShowroom;
+    // Union Bank: Ex-Showroom + TCS + Insurance + Registration + Accessories
+    loanBaseAmount = carData.exShowroom + tcs + carData.insurance + carData.registration + carData.accessories;
+  } else if (bankType === 'indusind') {
+    // IndusInd Bank: Ex-Showroom + TCS + Insurance
+    loanBaseAmount = carData.exShowroom + tcs + carData.insurance;
+  } else if (bankType === 'au') {
+    // AU Bank: Ex-Showroom + TCS + Insurance + Registration + GPS
+    loanBaseAmount = carData.exShowroom + tcs + carData.insurance + carData.registration + carData.gps;
   }
   
-  const loanAmount = (loanBaseAmount * bankData.loanPercent / 100);
-  const onRoadPrice = carData.exShowroom + tcs + carData.registration + carData.insurance + 
-                      carData.noPlate + carData.gps + carData.fastag + carData.speedGovernor + carData.accessories;
+  const loanAmount = Math.round(loanBaseAmount * (bankData.loanPercent / 100));
+  const marginDownPayment = loanBaseAmount - loanAmount;
   
-  const marginDownPayment = onRoadPrice - loanAmount;
-  const totalDownPayment = marginDownPayment + carData.processFee + carData.stampDuty + 
-                          carData.handlingCharge + carData.loanInsurance;
-  const finalDownPayment = totalDownPayment - carData.offers;
+  // Calculate on-the-road price
+  const onTheRoad = carData.exShowroom + tcs + carData.registration + carData.insurance + 
+                   carData.noPlate + carData.gps + carData.fastag + carData.speedGovernor + 
+                   carData.accessories;
   
-  // Calculate EMI for 5 years
-  const monthlyInterestRate = bankData.roi / (12 * 100);
-  const numberOfMonths = 5 * 12;
-  const monthlyEmi = (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfMonths)) / 
-                     (Math.pow(1 + monthlyInterestRate, numberOfMonths) - 1);
+  // Calculate final down payment after offers
+  const finalDownPayment = marginDownPayment - carData.offers;
+  
+  // Calculate EMI for 5 years (60 months)
+  const monthlyRate = bankData.roi / 100 / 12;
+  const numPayments = 60; // 5 years
+  const monthlyEmi = Math.round(
+    (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+    (Math.pow(1 + monthlyRate, numPayments) - 1)
+  );
   
   return {
-    tcs,
-    onRoadPrice,
     loanAmount,
     marginDownPayment,
-    totalDownPayment,
+    onTheRoad,
     finalDownPayment,
-    monthlyEmi
+    monthlyEmi,
+    tcs
   };
 }
 
-// Generate quotation data
+// Generate quotations for all combinations
 async function seedQuotationData() {
   try {
-    console.log('🌱 Starting quotation data seeding...');
+    console.log('Starting quotation data seeding...');
     
-    // Clear existing data
-    console.log('🗑️  Clearing existing quotation data...');
-    const { error: deleteError } = await supabaseAdmin
-      .from('quotations')
-      .delete()
-      .neq('vendor_id', 'dummy'); // Delete all records
+    const quotations = [];
+    let vendorId = 1;
     
-    if (deleteError) {
-      console.warn('Warning: Could not clear existing data:', deleteError.message);
-    }
-    
-    const quotationsToInsert = [];
-    let counter = 1;
-    
-    // Generate quotations for each car, variant, and bank combination
+    // Generate quotations for each car model and variant
     for (const [carModel, variants] of Object.entries(carQuotationData)) {
       for (const [variant, carData] of Object.entries(variants)) {
-        for (const [bankType, bankInfo] of Object.entries(bankRates)) {
+        
+        // Generate quotations for each bank
+        for (const [bankKey, bankInfo] of Object.entries(bankRates)) {
           const bankData = bankInfo.rates[carModel];
-          if (!bankData) continue;
           
-          const loanDetails = calculateLoanDetails(carModel, variant, bankType, carData, bankData);
-          
-          const quotation = {
-            vendor_id: `ASW-${counter.toString().padStart(4, '0')}-${bankType.toUpperCase()}`,
-            car_model: carModel,
-            model_variant: variant,
-            roi_emi_interest: bankData.roi,
-            sbi_bank: bankType === 'sbi' ? bankData.loanPercent : 0,
-            union_bank: bankType === 'union' ? bankData.loanPercent : 0,
-            indusind_bank: bankType === 'indusind' ? bankData.loanPercent : 0,
-            au_bank: bankType === 'au' ? bankData.loanPercent : 0,
-            ex_showroom: carData.exShowroom,
-            tcs: loanDetails.tcs,
-            registration: carData.registration,
-            insurance: carData.insurance,
-            number_plate_crtm_autocard: carData.noPlate,
-            gps: carData.gps,
-            fastag: carData.fastag,
-            speed_governor: carData.speedGovernor,
-            accessories: carData.accessories,
-            on_the_road: loanDetails.onRoadPrice,
-            loan_amount: loanDetails.loanAmount,
-            margin_down_payment: loanDetails.marginDownPayment,
-            process_fee: carData.processFee,
-            stamp_duty: carData.stampDuty,
-            handling_document_charge: carData.handlingCharge,
-            loan_suraksha_insurance: carData.loanInsurance,
-            down_payment: loanDetails.totalDownPayment,
-            offers: carData.offers,
-            final_down_payment: loanDetails.finalDownPayment,
-            emi_years: 5,
-            monthly_emi: loanDetails.monthlyEmi
-          };
-          
-          quotationsToInsert.push(quotation);
-          counter++;
+          if (bankData) {
+            const loanDetails = calculateLoanDetails(carModel, variant, bankKey, carData, bankData);
+            
+            const quotation = {
+              vendor_id: vendorId.toString(),
+              car_model: carModel,
+              model_variant: variant,
+              roi_emi_interest: bankData.roi,
+              sbi_bank: bankKey === 'sbi' ? bankData.loanPercent : 0,
+              union_bank: bankKey === 'union' ? bankData.loanPercent : 0,
+              indusind_bank: bankKey === 'indusind' ? bankData.loanPercent : 0,
+              au_bank: bankKey === 'au' ? bankData.loanPercent : 0,
+              ex_showroom: carData.exShowroom,
+              tcs: loanDetails.tcs,
+              registration: carData.registration,
+              insurance: carData.insurance,
+              number_plate_crtm_autocard: carData.noPlate,
+              gps: carData.gps,
+              fastag: carData.fastag,
+              speed_governor: carData.speedGovernor,
+              accessories: carData.accessories,
+              on_the_road: loanDetails.onTheRoad,
+              loan_amount: loanDetails.loanAmount,
+              margin_down_payment: loanDetails.marginDownPayment,
+              process_fee: carData.processFee,
+              stamp_duty: carData.stampDuty,
+              handling_document_charge: carData.handlingCharge,
+              loan_suraksha_insurance: carData.loanInsurance,
+              down_payment: loanDetails.marginDownPayment,
+              offers: carData.offers,
+              final_down_payment: loanDetails.finalDownPayment,
+              emi_years: 5,
+              monthly_emi: loanDetails.monthlyEmi
+            };
+            
+            quotations.push(quotation);
+            vendorId++;
+          }
         }
       }
     }
     
-    // Insert data in batches
-    const batchSize = 10;
-    let insertedCount = 0;
+    console.log(`Generated ${quotations.length} quotations`);
     
-    for (let i = 0; i < quotationsToInsert.length; i += batchSize) {
-      const batch = quotationsToInsert.slice(i, i + batchSize);
+    // Insert quotations in batches
+    const batchSize = 50;
+    for (let i = 0; i < quotations.length; i += batchSize) {
+      const batch = quotations.slice(i, i + batchSize);
       
       const { data, error } = await supabaseAdmin
         .from('quotations')
@@ -414,33 +411,11 @@ async function seedQuotationData() {
         throw error;
       }
       
-      insertedCount += batch.length;
-      console.log(`✅ Inserted batch ${Math.floor(i/batchSize) + 1}: ${batch.length} quotations (Total: ${insertedCount}/${quotationsToInsert.length})`);
+      console.log(`Inserted batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(quotations.length/batchSize)}`);
     }
     
-    console.log(`🎉 Successfully seeded ${insertedCount} quotations!`);
-    
-    // Verify the data
-    const { data: verifyData, error: verifyError } = await supabaseAdmin
-      .from('quotations')
-      .select('vendor_id, car_model, model_variant')
-      .limit(5);
-    
-    if (verifyError) {
-      console.error('Error verifying data:', verifyError);
-    } else {
-      console.log('✅ Sample verification data:', verifyData);
-    }
-    
-    // Show summary
-    const { data: summaryData, error: summaryError } = await supabaseAdmin
-      .from('quotations')
-      .select('car_model')
-      .eq('car_model', 'Maruti Suzuki Ertiga');
-    
-    if (!summaryError && summaryData) {
-      console.log(`📊 Example: Maruti Suzuki Ertiga has ${summaryData.length} quotation records`);
-    }
+    console.log('✅ Quotation data seeding completed successfully!');
+    console.log(`Total quotations inserted: ${quotations.length}`);
     
   } catch (error) {
     console.error('❌ Error seeding quotation data:', error);
@@ -448,20 +423,21 @@ async function seedQuotationData() {
   }
 }
 
-// Main execution
-async function main() {
-  try {
-    await seedQuotationData();
-    console.log('✨ Quotation data seeding completed successfully!');
-  } catch (error) {
-    console.error('💥 Quotation data seeding failed:', error);
-    process.exit(1);
-  }
-}
-
-// Run if called directly
+// Run the seeding if this file is executed directly
 if (require.main === module) {
-  main();
+  seedQuotationData()
+    .then(() => {
+      console.log('Seeding completed');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('Seeding failed:', error);
+      process.exit(1);
+    });
 }
 
-module.exports = { seedQuotationData, carQuotationData, bankRates }; 
+module.exports = {
+  seedQuotationData,
+  carQuotationData,
+  bankRates
+};

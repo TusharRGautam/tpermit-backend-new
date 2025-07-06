@@ -174,7 +174,7 @@ async function insertSampleData() {
 
     const sampleData = {
       vendor_id: 'SAMPLE-001',
-      car_model: 'Maruti Ertiga',
+      car_model: 'Maruti Suzuki ERTIGA',
       model_variant: 'ZXI+',
       roi_emi_interest: 8.75,
       sbi_bank: 85.0,
