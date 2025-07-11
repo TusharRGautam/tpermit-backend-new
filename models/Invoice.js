@@ -166,11 +166,15 @@ function calculateOnRoadPrice(invoiceData) {
     accessories: parseFloat(invoiceData.accessories) || 0
   };
   
+  // Apply TCS rules: Only include if Ex-Showroom > ₹10,00,000
+  const tcsAmount = numericValues.showroomCost > 1000000 ? numericValues.cts : 0;
+  
+  // Calculate On-Road Price excluding Number Plate/CRTm/AutoCard charges
   return numericValues.showroomCost + 
     numericValues.registration + 
     numericValues.insurance + 
-    numericValues.noPlate + 
-    numericValues.cts + 
+    // Note: noPlate (number_plate_crtm_autocard) is excluded from On-Road Price
+    tcsAmount + 
     numericValues.gps + 
     numericValues.fastag + 
     numericValues.speedGovernor + 

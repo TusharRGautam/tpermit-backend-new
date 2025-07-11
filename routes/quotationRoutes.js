@@ -203,31 +203,32 @@ router.get('/summary/cars', async (req, res) => {
 // Helper function to get colors for each variant
 function getColorsForVariant(carModel, variant) {
   const colorMap = {
-    'Maruti Suzuki Ertiga': {
-      'VXI CNG': ['White', 'Silver', 'Grey', 'Red', 'Blue'],
-      'Tour M': ['White']
+    'Maruti Suzuki Wagon-R': {
+      'H3 CNG': ['White'],
+      'LXI CNG': ['White', 'Silver', 'Grey', 'Red', 'Blue'],
+      'VXI CNG': ['White', 'Silver', 'Grey', 'Red', 'Blue']
+    },
+    'Maruti Suzuki ERTIGA': {
+      'Tour M CNG 1.5 MT': ['White'],
+      'VXI CNG 1.5 MT': ['White', 'Silver', 'Grey', 'Red', 'Blue'],
+      'ZXI CNG 1.5 MT': ['White', 'Silver', 'Grey', 'Red', 'Blue']
+    },
+    'TOYOTA RUMION': {
+      'S CNG 1.5 MT': ['White', 'Silver', 'Grey']
+    },
+    'HYUNDAI AURA': {
+      'E CNG': ['White', 'Silver', 'Grey', 'Cherry Night'],
+      'S CNG': ['White', 'Silver', 'Grey', 'Cherry Night'],
+      'SX CNG': ['White', 'Silver', 'Grey', 'Cherry Night']
     },
     'Maruti Suzuki Dzire': {
-      'Tour S CNG': ['White']
-    },
-    'Maruti Suzuki Wagon-R': {
-      'Wagoner-R H3 CNG': ['White'],
-      'Wagoner-R LXI CNG': ['White', 'Silver', 'Grey', 'Red', 'Blue'],
-      'Wagoner-R VXI CNG': ['White', 'Silver', 'Grey', 'Red', 'Blue']
-    },
-    'Maruti Suzuki Rumion': {
-      'S CNG': ['White', 'Silver', 'Grey']
-    },
-    'Hyundai Aura': {
-      'Aura E CNG': ['White', 'Silver', 'Grey', 'Cherry Night'],
-      'Aura S CNG': ['White', 'Silver', 'Grey', 'Cherry Night'],
-      'Aura SX CNG': ['White', 'Silver', 'Grey', 'Cherry Night']
+      'Tour\'s CNG': ['White']
     },
     'Toyota Innova Crysta': {
-      'Crysta GX': ['White', 'Silver', 'Pearl White'],
-      'Crysta GX+': ['White', 'Silver', 'Pearl White'],
-      'Crysta VX': ['White', 'Silver', 'Pearl White'],
-      'Crysta ZX': ['White', 'Silver', 'Pearl White']
+      'GX': ['White', 'Silver', 'Pearl White'],
+      'GX+': ['White', 'Silver', 'Pearl White'],
+      'VX': ['White', 'Silver', 'Pearl White'],
+      'ZX': ['White', 'Silver', 'Pearl White']
     }
   };
   
@@ -255,36 +256,6 @@ function getCarImagePath(carName) {
 function getFallbackCarData() {
   return [
     {
-      id: 'maruti-suzuki-ertiga',
-      image: '/Website-Images/Cars/ertiga.jpg',
-      name: 'Maruti Suzuki ERTIGA',
-      downPayment: '₹99,347',
-      monthlyEmi: '₹23,367/month',
-      globalExShowroomPrice: 1000000,
-      globalLoanAmount: 875000,
-      globalInterestRate: 8.5,
-      globalTotalOnRoadPrice: 1125000,
-      variants: [
-        { name: 'VXI CNG 1.5 MT', colors: ['White', 'Silver', 'Grey', 'Red', 'Blue'] },
-        { name: 'Tour M CNG 1.5 MT', colors: ['White'] }
-      ]
-    },
-    {
-      id: 'maruti-suzuki-dzire',
-      image: '/Website-Images/Cars/Dzire.jpg',
-      name: 'Maruti Suzuki Dzire',
-      downPayment: '₹1,35,971',
-      monthlyEmi: '₹17,531/month',
-      globalExShowroomPrice: 750000,
-      globalLoanAmount: 665000,
-      globalInterestRate: 8.5,
-      globalTotalOnRoadPrice: 850000,
-      variants: [
-        { name: 'Tour S CNG', colors: ['White'] },
-        { name: 'Tour S CNG', colors: ['White'] }
-      ]
-    },
-    {
       id: 'maruti-suzuki-wagon-r',
       image: '/Website-Images/Cars/wagnor.jpg',
       name: 'Maruti Suzuki Wagon-R',
@@ -295,8 +266,25 @@ function getFallbackCarData() {
       globalInterestRate: 8.5,
       globalTotalOnRoadPrice: 715000,
       variants: [
+        { name: 'H3 CNG', colors: ['White'] },
         { name: 'LXI CNG', colors: ['White', 'Silver', 'Grey', 'Red', 'Blue'] },
-        { name: 'Tour H', colors: ['White'] }
+        { name: 'VXI CNG', colors: ['White', 'Silver', 'Grey', 'Red', 'Blue'] }
+      ]
+    },
+    {
+      id: 'maruti-suzuki-ertiga',
+      image: '/Website-Images/Cars/ertiga.jpg',
+      name: 'Maruti Suzuki ERTIGA',
+      downPayment: '₹99,347',
+      monthlyEmi: '₹23,367/month',
+      globalExShowroomPrice: 1000000,
+      globalLoanAmount: 875000,
+      globalInterestRate: 8.5,
+      globalTotalOnRoadPrice: 1125000,
+      variants: [
+        { name: 'Tour M CNG 1.5 MT', colors: ['White'] },
+        { name: 'VXI CNG 1.5 MT', colors: ['White', 'Silver', 'Grey', 'Red', 'Blue'] },
+        { name: 'ZXI CNG 1.5 MT', colors: ['White', 'Silver', 'Grey', 'Red', 'Blue'] }
       ]
     },
     {
@@ -325,7 +313,22 @@ function getFallbackCarData() {
       globalTotalOnRoadPrice: 775000,
       variants: [
         { name: 'E CNG', colors: ['White', 'Silver', 'Grey', 'Cherry Night'] },
-        { name: 'S CNG', colors: ['White', 'Silver', 'Grey', 'Cherry Night'] }
+        { name: 'S CNG', colors: ['White', 'Silver', 'Grey', 'Cherry Night'] },
+        { name: 'SX CNG', colors: ['White', 'Silver', 'Grey', 'Cherry Night'] }
+      ]
+    },
+    {
+      id: 'maruti-suzuki-dzire',
+      image: '/Website-Images/Cars/Dzire.jpg',
+      name: 'Maruti Suzuki Dzire',
+      downPayment: '₹1,35,971',
+      monthlyEmi: '₹17,531/month',
+      globalExShowroomPrice: 750000,
+      globalLoanAmount: 665000,
+      globalInterestRate: 8.5,
+      globalTotalOnRoadPrice: 850000,
+      variants: [
+        { name: 'Tour\'s CNG', colors: ['White'] }
       ]
     },
     {
@@ -340,7 +343,9 @@ function getFallbackCarData() {
       globalTotalOnRoadPrice: 1950000,
       variants: [
         { name: 'GX', colors: ['White', 'Silver', 'Pearl White'] },
-        { name: 'GX+', colors: ['White', 'Silver', 'Pearl White'] }
+        { name: 'GX+', colors: ['White', 'Silver', 'Pearl White'] },
+        { name: 'VX', colors: ['White', 'Silver', 'Pearl White'] },
+        { name: 'ZX', colors: ['White', 'Silver', 'Pearl White'] }
       ]
     }
   ];
