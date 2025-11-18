@@ -17,9 +17,9 @@ router.post('/login', async (req, res) => {
     }
 
     // Check credentials against hardcoded values
-    if (email === 'asw@gmail.com' && password === 'asw@789') {
+    if (email === 't-permit@gmail.com' && password === 't-permit@789') {
       // Generate a simple session token (in production, use JWT or similar)
-      const sessionToken = 'asw_session_' + Date.now();
+      const sessionToken = 't-permit_session_' + Date.now();
       
       return res.json({
         success: true,
@@ -27,7 +27,7 @@ router.post('/login', async (req, res) => {
         sessionToken,
         user: {
           email: email,
-          name: 'ASW Admin'
+          name: 'T-Permit Admin'
         }
       });
     } else {
@@ -52,7 +52,7 @@ router.post('/verify', async (req, res) => {
     const { sessionToken } = req.body;
 
     // Simple session validation (in production, use proper JWT verification)
-    if (sessionToken && sessionToken.startsWith('asw_session_')) {
+    if (sessionToken && sessionToken.startsWith('t-permit_session_')) {
       return res.json({
         success: true,
         valid: true,

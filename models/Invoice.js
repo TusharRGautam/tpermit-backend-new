@@ -1,4 +1,4 @@
-const { supabaseAdmin } = require('../utils/httpClient');
+const { supabaseAdmin } = require('../supabaseClient');
 
 // Create or access the invoices table
 async function ensureInvoiceTable() {
@@ -6,7 +6,10 @@ async function ensureInvoiceTable() {
     console.log('Checking invoices table...');
     
     // Try to access the invoices table
-    const { data, error } = await supabaseAdmin.select('invoices', { limit: 1 });
+    const { data, error } = await supabaseAdmin
+      .from('invoices')
+      .select('*')
+      .limit(1);
     
     if (error) {
       console.log('Error accessing invoices table, it might not exist yet');
@@ -56,7 +59,10 @@ async function createInvoice(invoiceData) {
       customer_address: invoiceData.customerAddress || null
     };
     
-    const { data, error } = await supabaseAdmin.insert('invoices', dbInvoice);
+    const { data, error } = await supabaseAdmin
+      .from('invoices')
+      .insert([dbInvoice])
+      .select();
       
     if (error) throw error;
     
@@ -70,9 +76,10 @@ async function createInvoice(invoiceData) {
 // Get all invoices
 async function getAllInvoices() {
   try {
-    const { data, error } = await supabaseAdmin.select('invoices', {
-      order: 'date.desc'
-    });
+    const { data, error } = await supabaseAdmin
+      .from('invoices')
+      .select('*')
+      .order('date', { ascending: false });
       
     if (error) throw error;
     
@@ -86,14 +93,16 @@ async function getAllInvoices() {
 // Get invoice by ID
 async function getInvoiceById(id) {
   try {
-    const { data, error } = await supabaseAdmin.select('invoices', {
-      filter: { column: 'id', value: `eq.${id}` },
-      limit: 1
-    });
+    const { data, error } = await supabaseAdmin
+      .from('invoices')
+      .select('*')
+      .eq('id', id)
+      .limit(1)
+      .single();
       
     if (error) throw error;
     
-    return data && data.length > 0 ? data[0] : null;
+    return data || null;
   } catch (error) {
     console.error(`Error fetching invoice with ID ${id}:`, error);
     throw error;
@@ -122,12 +131,11 @@ async function updateInvoice(id, updatedData) {
     // Add updated timestamp
     formattedData.updated_at = new Date().toISOString();
     
-    const { data, error } = await supabaseAdmin.update(
-      'invoices',
-      'id',
-      `eq.${id}`,
-      formattedData
-    );
+    const { data, error } = await supabaseAdmin
+      .from('invoices')
+      .update(formattedData)
+      .eq('id', id)
+      .select();
       
     if (error) throw error;
     
@@ -141,7 +149,10 @@ async function updateInvoice(id, updatedData) {
 // Delete invoice
 async function deleteInvoice(id) {
   try {
-    const { error } = await supabaseAdmin.delete('invoices', 'id', `eq.${id}`);
+    const { error } = await supabaseAdmin
+      .from('invoices')
+      .delete()
+      .eq('id', id);
       
     if (error) throw error;
     

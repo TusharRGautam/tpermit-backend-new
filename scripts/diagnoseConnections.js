@@ -1,7 +1,7 @@
 require('dotenv').config();
 const axios = require('axios');
 const { pgPool, pgPooler } = require('../utils/pgClient');
-const { supabaseClient, supabaseAdmin } = require('../utils/httpClient');
+const { supabaseClient, supabaseAdmin } = require('../supabaseClient');
 
 async function diagnoseConnections() {
   console.log('💉 Database Connection Diagnostics 💉');
@@ -85,7 +85,10 @@ async function diagnoseConnections() {
   // Test Supabase REST API with service role key
   console.log('\n👑 Testing Supabase REST API with service role key:');
   try {
-    const { error } = await supabaseAdmin.select('invoices', { limit: 1 });
+    const { error } = await supabaseAdmin
+      .from('invoices')
+      .select('*')
+      .limit(1);
     if (error) {
       if (error.message.includes('does not exist')) {
         console.log('  ⚠️ Table "invoices" does not exist yet. This is expected if you\'re setting up for the first time.');

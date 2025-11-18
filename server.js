@@ -20,12 +20,12 @@ app.use(cors({
   origin: [
     'http://localhost:3000', 
     'http://127.0.0.1:3000',
-    'https://aswcars.com',
-    'https://www.aswcars.com',
-    'https://backend.aswcars.com',
-    'http://aswcars.com',
-    'http://www.aswcars.com',
-    'http://backend.aswcars.com'
+    'https://t-permit.com',
+    'https://www.t-permit.com',
+    'https://backend.t-permit.com',
+    'http://t-permit.com',
+    'http://www.t-permit.com',
+    'http://backend.t-permit.com'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -46,7 +46,7 @@ app.use(express.json());
 
 // Test route to verify server is working
 app.get('/', (req, res) => {
-  res.send('ASW Backend API is running');
+  res.send('T-Permit Backend API is running');
 });
 
 // Test route to verify Supabase connection
@@ -87,6 +87,14 @@ app.use('/api/quotations', quotationRoutes);
 // Authentication routes
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
+
+// Showroom routes
+const showroomRoutes = require('./routes/showroomRoutes');
+app.use('/api/showrooms', showroomRoutes);
+
+// Booking routes
+const bookingRoutes = require('./routes/bookingRoutes');
+app.use('/api/bookings', bookingRoutes);
 
 // Debug route to test API connectivity
 app.get('/api/test', (req, res) => {
@@ -160,24 +168,13 @@ async function startServer() {
     const implementation = await invoiceFactory.autoDetectImplementation();
     console.log(`Using ${implementation} implementation for database access`);
     
-    // OLD: Localhost server configuration (commented out)
-    // app.listen(PORT, '0.0.0.0', () => {
-    //   console.log(`Server running on port ${PORT}`);
-    //   console.log(`API available at http://localhost:${PORT}/api`);
-    //   console.log(`API also available at http://192.168.0.102:${PORT}/api`);
-    //   
-    //   // After server has started, fetch and log all invoice and quotation data
-    //   fetchAndLogInvoiceData();
-    //   fetchAndLogQuotationData();
-    // });
-    
     // NEW: Production server configuration
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 ASW Backend Server running on port ${PORT}`);
+      console.log(`🚀 T-Permit Backend Server running on port ${PORT}`);
       console.log(`📡 API available at http://localhost:${PORT}/api`);
-      console.log(`🌐 Production API: https://backend.aswcars.com/api`);
-      console.log(`🔗 Frontend: https://aswcars.com`);
-      console.log(`✅ CORS enabled for: aswcars.com, www.aswcars.com, backend.aswcars.com`);
+      console.log(`🌐 Production API: https://backend.t-permit.com/api`);
+      console.log(`🔗 Frontend: https://t-permit.com`);
+      console.log(`✅ CORS enabled for: t-permit.com, www.t-permit.com, backend.t-permit.com`);
       console.log(`🔄 Preflight requests handled for all routes`);
       
       // After server has started, fetch and log all invoice and quotation data

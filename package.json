@@ -1,7 +1,7 @@
 {
-  "name": "asw-backend",
+  "name": "t-permit-backend",
   "version": "1.0.0",
-  "description": "Backend for ASW Website",
+  "description": "Backend for T-Permit Website",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

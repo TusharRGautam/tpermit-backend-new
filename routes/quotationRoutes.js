@@ -238,15 +238,15 @@ function getColorsForVariant(carModel, variant) {
 // Helper function to get car image path
 function getCarImagePath(carName) {
   const imageMap = {
-    'Maruti Suzuki Ertiga': '/Website-Images/Cars/ertiga.jpg',
-    'Maruti Suzuki ERTIGA': '/Website-Images/Cars/ertiga.jpg',
-    'Maruti Suzuki Dzire': '/Website-Images/Cars/Dzire.jpg',
-    'Maruti Suzuki Wagon-R': '/Website-Images/Cars/wagnor.jpg',
-    'Maruti Suzuki Rumion': '/Website-Images/Cars/Ruminum.jpg',
-    'TOYOTA RUMION': '/Website-Images/Cars/Ruminum.jpg',
-    'Hyundai Aura': '/Website-Images/Cars/Aura.jpg',
-    'HYUNDAI AURA': '/Website-Images/Cars/Aura.jpg',
-    'Toyota Innova Crysta': '/Website-Images/Cars/Crysta.jpg'
+    'Maruti Suzuki Ertiga': '/Website-Images/Cars/ertiga.png',
+    'Maruti Suzuki ERTIGA': '/Website-Images/Cars/ertiga.png',
+    'Maruti Suzuki Dzire': '/Website-Images/Cars/Dzire.png',
+    'Maruti Suzuki Wagon-R': '/Website-Images/Cars/wagnor.png',
+    'Maruti Suzuki Rumion': '/Website-Images/Cars/Rumion.png',
+    'TOYOTA RUMION': '/Website-Images/Cars/Rumion.png',
+    'Hyundai Aura': '/Website-Images/Cars/Aura.png',
+    'HYUNDAI AURA': '/Website-Images/Cars/Aura.png',
+    'Toyota Innova Crysta': '/Website-Images/Cars/Crysta.png'
   };
   
   return imageMap[carName] || '/Website-Images/Cars/placeholder.svg';
@@ -257,7 +257,7 @@ function getFallbackCarData() {
   return [
     {
       id: 'maruti-suzuki-wagon-r',
-      image: '/Website-Images/Cars/wagnor.jpg',
+      image: '/Website-Images/Cars/wagnor.png',
       name: 'Maruti Suzuki Wagon-R',
       downPayment: '₹92,821',
       monthlyEmi: '₹11,884/month',
@@ -273,7 +273,7 @@ function getFallbackCarData() {
     },
     {
       id: 'maruti-suzuki-ertiga',
-      image: '/Website-Images/Cars/ertiga.jpg',
+      image: '/Website-Images/Cars/ertiga.png',
       name: 'Maruti Suzuki ERTIGA',
       downPayment: '₹99,347',
       monthlyEmi: '₹23,367/month',
@@ -289,7 +289,7 @@ function getFallbackCarData() {
     },
     {
       id: 'toyota-rumion',
-      image: '/Website-Images/Cars/Ruminum.jpg',
+      image: '/Website-Images/Cars/Ruminum.png',
       name: 'TOYOTA RUMION',
       downPayment: '₹1,03,647',
       monthlyEmi: '₹23,344/month',
@@ -303,7 +303,7 @@ function getFallbackCarData() {
     },
     {
       id: 'hyundai-aura',
-      image: '/Website-Images/Cars/Aura.jpg',
+      image: '/Website-Images/Cars/Aura.png',
       name: 'HYUNDAI AURA',
       downPayment: '₹1,23,821',
       monthlyEmi: '₹15,809/month',
@@ -319,7 +319,7 @@ function getFallbackCarData() {
     },
     {
       id: 'maruti-suzuki-dzire',
-      image: '/Website-Images/Cars/Dzire.jpg',
+      image: '/Website-Images/Cars/Dzire.png',
       name: 'Maruti Suzuki Dzire',
       downPayment: '₹1,35,971',
       monthlyEmi: '₹17,531/month',
@@ -333,7 +333,7 @@ function getFallbackCarData() {
     },
     {
       id: 'toyota-innova-crysta',
-      image: '/Website-Images/Cars/Crysta.jpg',
+      image: '/Website-Images/Cars/Crysta.png',
       name: 'Toyota Innova Crysta',
       downPayment: '₹1,59,547',
       monthlyEmi: '₹38,557/month',

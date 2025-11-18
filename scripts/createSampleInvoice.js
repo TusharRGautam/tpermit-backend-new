@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { supabaseAdmin } = require('../utils/httpClient');
+const { supabaseAdmin } = require('../supabaseClient');
 const invoiceModel = require('../models/Invoice');
 
 async function createSampleInvoice() {

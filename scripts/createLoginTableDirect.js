@@ -12,8 +12,8 @@ async function createLoginTableDirect() {
       .from('login')
       .insert([
         {
-          email: 'asw@gmail.com',
-          password: 'asw@789'
+          email: 't-permit@gmail.com',
+          password: 't-permit@789'
         }
       ])
       .select();
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS login (
 );
 
 -- Insert the hardcoded credentials
-INSERT INTO login (email, password) VALUES ('asw@gmail.com', 'asw@789')
+INSERT INTO login (email, password) VALUES ('t-permit@gmail.com', 't-permit@789')
 ON CONFLICT (email) DO NOTHING;
 
 -- Create index on email for faster lookups

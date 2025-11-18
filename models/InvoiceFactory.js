@@ -74,8 +74,11 @@ async function autoDetectImplementation() {
     // Try Supabase
     console.log('Testing Supabase connection...');
     try {
-      const { supabaseAdmin } = require('../utils/httpClient');
-      const supabaseResult = await supabaseAdmin.select('invoices', { limit: 1 });
+      const { supabaseAdmin } = require('../supabaseClient');
+      const supabaseResult = await supabaseAdmin
+        .from('invoices')
+        .select('*')
+        .limit(1);
       
       if (!supabaseResult.error) {
         useImplementation('supabase');
