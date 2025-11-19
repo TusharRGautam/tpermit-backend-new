@@ -484,7 +484,7 @@ function parseQuotationRecords(sqlContent) {
     {
       vendor_id: 'V-1753361327548-lsghbx',
       car_model: 'Maruti Suzuki Dzire',
-      model_variant: 'Tours CNG', // Fixed the problematic apostrophe
+      model_variant: 'Tour S CNG', // Fixed the problematic apostrophe
       roi_emi_interest: 11.40,
       sbi_bank: 85.00,
       union_bank: 0.00,

@@ -260,37 +260,49 @@ class SupabaseBooking {
 
   async getBookingStats() {
     try {
-      // Get booking counts by status
-      const { data: statusStats, error: statusError } = await this.supabase
+      // Get all bookings to calculate stats
+      const { data: allBookings, error: fetchError } = await this.supabase
         .from(this.tableName)
-        .select('booking_status, count(*)')
-        .group('booking_status');
+        .select('booking_status, payment_status, booking_amount');
 
-      if (statusError) throw statusError;
+      if (fetchError) throw fetchError;
 
-      // Get payment stats
-      const { data: paymentStats, error: paymentError } = await this.supabase
-        .from(this.tableName)
-        .select('payment_status, count(*)')
-        .group('payment_status');
+      // Calculate status breakdown
+      const statusBreakdown = {};
+      const paymentBreakdown = {};
+      let totalBookingAmount = 0;
 
-      if (paymentError) throw paymentError;
+      (allBookings || []).forEach(booking => {
+        // Count booking status
+        const status = booking.booking_status || 'unknown';
+        statusBreakdown[status] = (statusBreakdown[status] || 0) + 1;
 
-      // Get total booking amount
-      const { data: amountData, error: amountError } = await this.supabase
-        .from(this.tableName)
-        .select('booking_amount')
-        .eq('payment_status', 'paid');
+        // Count payment status
+        const paymentStatus = booking.payment_status || 'unknown';
+        paymentBreakdown[paymentStatus] = (paymentBreakdown[paymentStatus] || 0) + 1;
 
-      if (amountError) throw amountError;
+        // Sum booking amounts for paid bookings
+        if (booking.payment_status === 'paid' && booking.booking_amount) {
+          totalBookingAmount += parseFloat(booking.booking_amount);
+        }
+      });
 
-      const totalAmount = amountData?.reduce((sum, item) => sum + (item.booking_amount || 0), 0) || 0;
+      // Convert objects to arrays for consistency
+      const statusBreakdownArray = Object.entries(statusBreakdown).map(([booking_status, count]) => ({
+        booking_status,
+        count
+      }));
+
+      const paymentBreakdownArray = Object.entries(paymentBreakdown).map(([payment_status, count]) => ({
+        payment_status,
+        count
+      }));
 
       return {
-        statusBreakdown: statusStats,
-        paymentBreakdown: paymentStats,
-        totalBookingAmount: totalAmount,
-        totalBookings: statusStats?.reduce((sum, item) => sum + item.count, 0) || 0
+        statusBreakdown: statusBreakdownArray,
+        paymentBreakdown: paymentBreakdownArray,
+        totalBookingAmount: totalBookingAmount,
+        totalBookings: allBookings?.length || 0
       };
     } catch (error) {
       console.error('Error getting booking stats:', error);
