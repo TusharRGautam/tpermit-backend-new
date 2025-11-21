@@ -5,7 +5,7 @@ const { supabaseClient } = require('./supabaseClient');
 
 // Initialize express app
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // OLD: Localhost-only CORS configuration (commented out)
 // app.use(cors({
@@ -18,14 +18,14 @@ const PORT = process.env.PORT || 5000;
 // NEW: Production CORS configuration with domain support
 app.use(cors({
   origin: [
-    'http://localhost:3000', 
+    'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://t-permit.com',
-    'https://www.t-permit.com',
-    'https://backend.t-permit.com',
-    'http://t-permit.com',
-    'http://www.t-permit.com',
-    'http://backend.t-permit.com'
+    'https://gautammotors.in',
+    'https://www.gautammotors.in',
+    'https://api.gautammotors.in',
+    'http://gautammotors.in',
+    'http://www.gautammotors.in',
+    'http://api.gautammotors.in'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
