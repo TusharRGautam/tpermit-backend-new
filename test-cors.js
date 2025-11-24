@@ -54,4 +54,4 @@ async function testCors() {
 }
 
 // Run the test
-testCors().catch(console.error); 
+// testCors().catch(console.error); 
