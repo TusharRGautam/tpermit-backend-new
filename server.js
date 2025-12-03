@@ -96,6 +96,10 @@ app.use('/api/showrooms', showroomRoutes);
 const bookingRoutes = require('./routes/bookingRoutes');
 app.use('/api/bookings', bookingRoutes);
 
+// Receipt routes
+const receiptRoutes = require('./routes/receiptRoutes');
+app.use('/api/receipts', receiptRoutes);
+
 // Debug route to test API connectivity
 app.get('/api/test', (req, res) => {
   res.json({
