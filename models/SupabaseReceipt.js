@@ -148,7 +148,10 @@ class SupabaseReceipt {
   }
 
   // Get next receipt number
-  async getNextReceiptNumber() {
+  async getNextReceiptNumber(manualNumber = null) {
+      if (manualNumber) {
+          return manualNumber;
+      }
     try {
       // Try using RPC function first
       const { data: rpcData, error: rpcError } = await this.supabase
@@ -169,8 +172,10 @@ class SupabaseReceipt {
 
       if (data && data.length > 0) {
         const lastNumber = parseInt(data[0].receipt_number.replace('GM', ''));
-        const nextNumber = lastNumber + 1;
-        return `GM${String(nextNumber).padStart(3, '0')}`;
+        if (!isNaN(lastNumber)) {
+             const nextNumber = lastNumber + 1;
+             return `GM${String(nextNumber).padStart(3, '0')}`;
+        }
       }
 
       return 'GM500'; // Default starting number

@@ -94,11 +94,23 @@ app.use('/api/showrooms', showroomRoutes);
 
 // Booking routes
 const bookingRoutes = require('./routes/bookingRoutes');
-app.use('/api/bookings', bookingRoutes);
-
 // Receipt routes
 const receiptRoutes = require('./routes/receiptRoutes');
+// Booking Order routes
+const bookingOrderRoutes = require('./routes/bookingOrderRoutes');
+// Proforma routes
+const proformaRoutes = require('./routes/proformaRoutes');
+
+// Routes
+app.use('/api/users', userRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/quotations', quotationRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/showrooms', showroomRoutes);
+app.use('/api/bookings', bookingRoutes);
 app.use('/api/receipts', receiptRoutes);
+app.use('/api/booking-orders', bookingOrderRoutes);
+app.use('/api/proforma-invoices', proformaRoutes);
 
 // Debug route to test API connectivity
 app.get('/api/test', (req, res) => {

@@ -1,0 +1,73 @@
+Making API request to: http://localhost:5001/api/booking-orders/next-number {headers: {…}, method: 'GET'}
+apiService.js:41 API Response Status: 200
+apiService.js:48 API Response Data: {success: true, data: 'BO0530'}
+apiService.js:37 Making API request to: http://localhost:5001/api/proforma-invoices/next-serial {headers: {…}, method: 'GET'}
+apiService.js:41 API Response Status: 200
+apiService.js:48 API Response Data: {success: true, serialNumber: 'PI13001'}
+UnifiedBookingFlow.tsx:141 Order number updated from BO0529 to BO0530
+apiService.js:37 Making API request to: http://localhost:5001/api/booking-orders {headers: {…}, method: 'POST', body: '{"order_number":"BO0530","order_date":"2026-01-26"…333333","customer_address":"Shil road diva east"}'}
+apiService.js:41 API Response Status: 201
+apiService.js:48 API Response Data: {success: true, message: 'Booking order created successfully', data: {…}}
+fetch.ts:7  POST https://gbcncisbxiuzkrazbyew.supabase.co/rest/v1/payment_receipts?columns=%22receipt_number%22%2C%22receipt_date%22%2C%22customer_name%22%2C%22customer_address%22%2C%22mobile_number%22%2C%22car_model%22%2C%22variant%22%2C%22sales_executive_name%22%2C%22receipt_amount%22%2C%22payment_mode%22%2C%22remarks%22%2C%22hypothecated_to%22&select=* 400 (Bad Request)
+(anonymous) @ fetch.ts:7
+(anonymous) @ fetch.ts:34
+await in (anonymous)
+then @ PostgrestBuilder.ts:122Understand this error
+receiptService.js:51 Error creating receipt: {code: '22003', details: 'A field with precision 12, scale 2 must round to an absolute value less than 10^10.', hint: null, message: 'numeric field overflow'}
+createReceipt @ receiptService.js:51
+await in createReceipt
+handleSubmit @ UnifiedBookingFlow.tsx:204
+await in handleSubmit
+executeDispatch @ react-dom-client.development.js:16368
+runWithFiberInDEV @ react-dom-client.development.js:1518
+processDispatchQueue @ react-dom-client.development.js:16417
+(anonymous) @ react-dom-client.development.js:17016
+batchedUpdates$1 @ react-dom-client.development.js:3262
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:16572
+dispatchEvent @ react-dom-client.development.js:20657
+dispatchDiscreteEvent @ react-dom-client.development.js:20625
+<button>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:336
+UnifiedBookingFlow @ UnifiedBookingFlow.tsx:424
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooksAgain @ react-dom-client.development.js:5629
+renderWithHooks @ react-dom-client.development.js:5541
+updateFunctionComponent @ react-dom-client.development.js:8897
+beginWork @ react-dom-client.development.js:10522
+runWithFiberInDEV @ react-dom-client.development.js:1518
+performUnitOfWork @ react-dom-client.development.js:15130
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14417
+performSyncWorkOnRoot @ react-dom-client.development.js:16231
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16068
+processRootScheduleInMicrotask @ react-dom-client.development.js:16116
+(anonymous) @ react-dom-client.development.js:16245Understand this error
+UnifiedBookingFlow.tsx:248 Error submitting form: {code: '22003', details: 'A field with precision 12, scale 2 must round to an absolute value less than 10^10.', hint: null, message: 'numeric field overflow'}
+handleSubmit @ UnifiedBookingFlow.tsx:248
+await in handleSubmit
+executeDispatch @ react-dom-client.development.js:16368
+runWithFiberInDEV @ react-dom-client.development.js:1518
+processDispatchQueue @ react-dom-client.development.js:16417
+(anonymous) @ react-dom-client.development.js:17016
+batchedUpdates$1 @ react-dom-client.development.js:3262
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:16572
+dispatchEvent @ react-dom-client.development.js:20657
+dispatchDiscreteEvent @ react-dom-client.development.js:20625
+<button>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:336
+UnifiedBookingFlow @ UnifiedBookingFlow.tsx:424
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooksAgain @ react-dom-client.development.js:5629
+renderWithHooks @ react-dom-client.development.js:5541
+updateFunctionComponent @ react-dom-client.development.js:8897
+beginWork @ react-dom-client.development.js:10522
+runWithFiberInDEV @ react-dom-client.development.js:1518
+performUnitOfWork @ react-dom-client.development.js:15130
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14417
+performSyncWorkOnRoot @ react-dom-client.development.js:16231
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16068
+processRootScheduleInMicrotask @ react-dom-client.development.js:16116
+(anonymous) @ react-dom-client.development.js:16245Understand this error
