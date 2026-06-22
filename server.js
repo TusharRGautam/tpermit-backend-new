@@ -100,6 +100,8 @@ const receiptRoutes = require('./routes/receiptRoutes');
 const bookingOrderRoutes = require('./routes/bookingOrderRoutes');
 // Proforma routes
 const proformaRoutes = require('./routes/proformaRoutes');
+// Lead routes
+const leadRoutes = require('./routes/leadRoutes');
 
 // Routes
 app.use('/api/users', userRoutes);
@@ -111,6 +113,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/booking-orders', bookingOrderRoutes);
 app.use('/api/proforma-invoices', proformaRoutes);
+app.use('/api/leads', leadRoutes);
 
 // Debug route to test API connectivity
 app.get('/api/test', (req, res) => {
