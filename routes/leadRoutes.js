@@ -49,50 +49,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/leads/:id - Fetch lead by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const lead = await SupabaseLead.getById(req.params.id);
-    res.json({ success: true, data: lead });
-  } catch (error) {
-    console.error('Error fetching lead details:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch lead details', error: error.message });
-  }
-});
-
-// POST /api/leads - Create lead manually (e.g. from simulator or admin panel)
-router.post('/', async (req, res) => {
-  try {
-    const lead = await SupabaseLead.create(req.body);
-    res.status(201).json({ success: true, message: 'Lead created successfully', data: lead });
-  } catch (error) {
-    console.error('Error creating lead:', error);
-    res.status(500).json({ success: false, message: 'Failed to create lead', error: error.message });
-  }
-});
-
-// PUT /api/leads/:id - Update lead (status, is_hot)
-router.put('/:id', async (req, res) => {
-  try {
-    const updatedLead = await SupabaseLead.update(req.params.id, req.body);
-    res.json({ success: true, message: 'Lead updated successfully', data: updatedLead });
-  } catch (error) {
-    console.error('Error updating lead:', error);
-    res.status(500).json({ success: false, message: 'Failed to update lead', error: error.message });
-  }
-});
-
-// DELETE /api/leads/:id - Delete lead
-router.delete('/:id', async (req, res) => {
-  try {
-    await SupabaseLead.delete(req.params.id);
-    res.json({ success: true, message: 'Lead deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting lead:', error);
-    res.status(500).json({ success: false, message: 'Failed to delete lead', error: error.message });
-  }
-});
-
 // GET /api/leads/webhook - Verify Meta Webhook Endpoint
 // Meta checks this when setting up the webhook in Meta Developer Console
 router.get('/webhook', (req, res) => {
@@ -224,6 +180,50 @@ router.post('/webhook', async (req, res) => {
     }
   } catch (error) {
     console.error('Unhandled error in webhook receiver:', error);
+  }
+});
+
+// GET /api/leads/:id - Fetch lead by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const lead = await SupabaseLead.getById(req.params.id);
+    res.json({ success: true, data: lead });
+  } catch (error) {
+    console.error('Error fetching lead details:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch lead details', error: error.message });
+  }
+});
+
+// POST /api/leads - Create lead manually (e.g. from simulator or admin panel)
+router.post('/', async (req, res) => {
+  try {
+    const lead = await SupabaseLead.create(req.body);
+    res.status(201).json({ success: true, message: 'Lead created successfully', data: lead });
+  } catch (error) {
+    console.error('Error creating lead:', error);
+    res.status(500).json({ success: false, message: 'Failed to create lead', error: error.message });
+  }
+});
+
+// PUT /api/leads/:id - Update lead (status, is_hot)
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedLead = await SupabaseLead.update(req.params.id, req.body);
+    res.json({ success: true, message: 'Lead updated successfully', data: updatedLead });
+  } catch (error) {
+    console.error('Error updating lead:', error);
+    res.status(500).json({ success: false, message: 'Failed to update lead', error: error.message });
+  }
+});
+
+// DELETE /api/leads/:id - Delete lead
+router.delete('/:id', async (req, res) => {
+  try {
+    await SupabaseLead.delete(req.params.id);
+    res.json({ success: true, message: 'Lead deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting lead:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete lead', error: error.message });
   }
 });
 
