@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const SupabaseLead = require('../models/SupabaseLead');
+const sheetSyncService = require('../services/sheetSyncService');
 
 // Helper to parse Facebook field data array
 function parseMetaFieldData(fieldData) {
@@ -38,6 +39,29 @@ function parseMetaFieldData(fieldData) {
   return { mapped, custom };
 }
 
+// Helper to resolve the correct Page Access Token if a User Access Token is used
+async function getAccessTokenForPage(pageId) {
+  const defaultToken = process.env.META_PAGE_ACCESS_TOKEN;
+  if (!defaultToken) return null;
+  
+  try {
+    const response = await axios.get(
+      `https://graph.facebook.com/v19.0/me/accounts?fields=id,access_token&access_token=${defaultToken}`
+    );
+    if (response.data && Array.isArray(response.data.data)) {
+      const page = response.data.data.find(p => String(p.id) === String(pageId));
+      if (page && page.access_token) {
+        console.log(`Resolved Page Access Token for Page ID: ${pageId}`);
+        return page.access_token;
+      }
+    }
+  } catch (error) {
+    console.warn(`Could not resolve Page Access Token for Page ID ${pageId}:`, error.message);
+  }
+  
+  return defaultToken; // fallback to user token
+}
+
 // GET /api/leads - Fetch all leads
 router.get('/', async (req, res) => {
   try {
@@ -46,6 +70,202 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Error fetching leads:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch leads', error: error.message });
+  }
+});
+
+// POST /api/leads/sync - Sync/fetch historical leads from Meta Leadgen Forms
+router.post('/sync', async (req, res) => {
+  const pageAccessToken = process.env.META_PAGE_ACCESS_TOKEN;
+  if (!pageAccessToken) {
+    return res.status(400).json({ success: false, message: 'META_PAGE_ACCESS_TOKEN is not configured in .env' });
+  }
+
+  try {
+    console.log('🔄 Initiating historical lead sync from Meta...');
+    
+    // We will still fetch managed pages first to get their Page Access Tokens
+    let managedPagesMap = {};
+    try {
+      console.log('Attempting to fetch managed pages to resolve tokens...');
+      const accountsResponse = await axios.get(
+        `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token&access_token=${pageAccessToken}`
+      );
+      if (accountsResponse.data && Array.isArray(accountsResponse.data.data)) {
+        accountsResponse.data.data.forEach(p => {
+          managedPagesMap[String(p.id)] = {
+            name: p.name,
+            access_token: p.access_token
+          };
+        });
+        console.log(`Cached ${Object.keys(managedPagesMap).length} managed page token(s) for resolution.`);
+      }
+    } catch (accountsError) {
+      if (accountsError.response && accountsError.response.data) {
+        console.error('Could not retrieve managed pages accounts. Error response:', JSON.stringify(accountsError.response.data, null, 2));
+      } else {
+        console.error('Could not retrieve managed pages accounts. Error:', accountsError.message);
+      }
+    }
+
+    let formsToSync = [];
+    
+    // Resolve which Page IDs are allowed to sync (defaulting to Gautam Motors)
+    const pageIdsEnv = process.env.META_PAGE_IDS;
+    let allowedPageIds = [];
+    
+    if (pageIdsEnv) {
+      allowedPageIds = pageIdsEnv.split(',').map(id => id.trim());
+      console.log(`Filtering sync to configured Page IDs: ${JSON.stringify(allowedPageIds)}`);
+    } else {
+      allowedPageIds = ['114072438461966', '132874573234075'];
+      console.log(`No META_PAGE_IDS configured in .env. Defaulting to Gautam Motors Page IDs: ${JSON.stringify(allowedPageIds)}`);
+    }
+    
+    let pagesToSync = [];
+    if (Object.keys(managedPagesMap).length > 0) {
+      pagesToSync = Object.entries(managedPagesMap)
+        .filter(([id, p]) => allowedPageIds.includes(String(id)) || p.name.toLowerCase().includes('gautam'))
+        .map(([id, p]) => ({
+          id,
+          name: p.name,
+          access_token: p.access_token
+        }));
+      console.log(`Filtered pages for sync (matching Page IDs or containing "Gautam"): ${JSON.stringify(pagesToSync.map(p => p.name))}`);
+    } else {
+      // Fallback if accounts fetch failed or returned nothing
+      const meResponse = await axios.get(
+        `https://graph.facebook.com/v19.0/me?fields=id,name&access_token=${pageAccessToken}`
+      );
+      pagesToSync.push({
+        id: meResponse.data.id,
+        name: meResponse.data.name,
+        access_token: pageAccessToken
+      });
+      console.log(`Using token directly for: ${meResponse.data.name} (ID: ${meResponse.data.id})`);
+    }
+
+    for (const page of pagesToSync) {
+      try {
+        console.log(`Fetching forms for page: ${page.name} (ID: ${page.id})...`);
+        const formsResponse = await axios.get(
+          `https://graph.facebook.com/v19.0/${page.id}/leadgen_forms?fields=id,name,status&access_token=${page.access_token}`
+        );
+        const pageForms = formsResponse.data.data || [];
+        console.log(`Found ${pageForms.length} forms for page ${page.name}.`);
+        
+        pageForms.forEach(f => {
+          formsToSync.push({
+            id: f.id,
+            name: f.name,
+            pageId: page.id,
+            pageName: page.name,
+            access_token: page.access_token
+          });
+        });
+      } catch (pageError) {
+        console.error(`Could not fetch forms for page ${page.name} (ID: ${page.id}):`, pageError.message);
+        if (pageError.response && pageError.response.data) {
+          console.error(`Meta API error response for page ${page.name}:`, JSON.stringify(pageError.response.data, null, 2));
+        }
+      }
+    }
+
+    console.log(`Forms to sync leads from: ${JSON.stringify(formsToSync.map(f => ({ id: f.id, name: f.name, page: f.pageName })))}`);
+
+    let totalProcessed = 0;
+    let newLeadsSaved = 0;
+    const syncedPagesMap = {};
+
+    // Process each resolved form and fetch leads
+    for (const form of formsToSync) {
+      const pageKey = form.pageId || 'unknown_page';
+      if (!syncedPagesMap[pageKey]) {
+        syncedPagesMap[pageKey] = {
+          id: form.pageId,
+          name: form.pageName,
+          forms_checked: 0,
+          leads_found: 0,
+          new_leads_saved: 0
+        };
+      }
+      
+      syncedPagesMap[pageKey].forms_checked++;
+
+      try {
+        const leadsResponse = await axios.get(
+          `https://graph.facebook.com/v19.0/${form.id}/leads?fields=id,created_time,campaign_name,adset_name,ad_name,form_id,field_data&access_token=${form.access_token}`
+        );
+        const fbLeads = leadsResponse.data.data || [];
+        console.log(`Form "${form.name}" (ID: ${form.id}) has ${fbLeads.length} leads.`);
+        
+        for (const fbLead of fbLeads) {
+          totalProcessed++;
+          syncedPagesMap[pageKey].leads_found++;
+          
+          // Check if lead already exists in DB
+          const alreadyExists = await SupabaseLead.getByLeadId(fbLead.id);
+          if (alreadyExists) {
+            continue;
+          }
+          
+          // Parse lead fields
+          const { mapped, custom } = parseMetaFieldData(fbLead.field_data);
+          
+          // Save to DB
+          await SupabaseLead.create({
+            lead_id: fbLead.id,
+            full_name: mapped.full_name || 'Facebook User',
+            mobile_number: mapped.mobile_number || 'N/A',
+            email_address: mapped.email_address || null,
+            city: mapped.city || null,
+            state: mapped.state || null,
+            lead_source: 'Facebook Meta Sync',
+            campaign_name: fbLead.campaign_name || 'Meta Ad Campaign',
+            ad_set_name: fbLead.adset_name || 'Meta Ad Set',
+            ad_name: fbLead.ad_name || 'Meta Ad',
+            vehicle_interest: mapped.vehicle_interest || null,
+            budget: mapped.budget || null,
+            custom_fields: {
+              ...custom,
+              form_id: fbLead.form_id,
+              form_name: form.name
+            },
+            created_at: fbLead.created_time || new Date().toISOString()
+          });
+          
+          newLeadsSaved++;
+          syncedPagesMap[pageKey].new_leads_saved++;
+        }
+      } catch (formError) {
+        console.error(`Error fetching leads for form ${form.name} (ID: ${form.id}):`, formError.message);
+        let errorDetail = formError.message;
+        if (formError.response && formError.response.data && formError.response.data.error) {
+          errorDetail = formError.response.data.error.message;
+        }
+        syncedPagesMap[pageKey].error = errorDetail;
+      }
+    }
+
+    const syncedPages = Object.values(syncedPagesMap);
+
+    res.json({
+      success: true,
+      message: 'Leads synced successfully from Facebook Meta',
+      synced_pages: syncedPages,
+      total_leads_found: totalProcessed,
+      new_leads_saved: newLeadsSaved
+    });
+  } catch (error) {
+    console.error('Error during Meta leads sync:', error.message);
+    if (error.response) {
+      console.error('Meta API response error:', error.response.data);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Meta API call failed', 
+        error: error.response.data.error ? error.response.data.error.message : error.message 
+      });
+    }
+    res.status(500).json({ success: false, message: 'Failed to sync leads', error: error.message });
   }
 });
 
@@ -111,8 +331,8 @@ router.post('/webhook', async (req, res) => {
             }
 
             // Fetch actual lead details from Meta Graph API
-            const pageAccessToken = process.env.META_PAGE_ACCESS_TOKEN;
-            if (!pageAccessToken) {
+            const baseAccessToken = process.env.META_PAGE_ACCESS_TOKEN;
+            if (!baseAccessToken) {
               console.warn('⚠️ META_PAGE_ACCESS_TOKEN is not configured. Cannot fetch lead details from Graph API.');
               
               // In development or simulation mode, fallback to placeholder details so we don't drop the lead notification
@@ -138,10 +358,15 @@ router.post('/webhook', async (req, res) => {
             }
 
             try {
+              // Extract Page ID from webhook change value or entry ID to get the correct Page Access Token
+              const pageId = change.value.page_id || entry.id;
+              console.log(`Resolving token for Page ID: ${pageId}...`);
+              const resolvedAccessToken = await getAccessTokenForPage(pageId);
+              
               // Real Facebook Meta API fetch
-              console.log(`Fetching lead details from Graph API for ${leadGenId}...`);
+              console.log(`Fetching lead details from Graph API for lead ID ${leadGenId} using resolved token...`);
               const fbResponse = await axios.get(
-                `https://graph.facebook.com/v19.0/${leadGenId}?access_token=${pageAccessToken}`
+                `https://graph.facebook.com/v19.0/${leadGenId}?access_token=${resolvedAccessToken}`
               );
               
               const fbLead = fbResponse.data;
@@ -180,6 +405,52 @@ router.post('/webhook', async (req, res) => {
     }
   } catch (error) {
     console.error('Unhandled error in webhook receiver:', error);
+  }
+});
+
+// GET /api/leads/sheets-config - Get current Google Sheets sync configuration & status
+router.get('/sheets-config', (req, res) => {
+  try {
+    const config = sheetSyncService.readConfig();
+    res.json({ success: true, data: config });
+  } catch (error) {
+    console.error('Error fetching sheets config:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch sheets configuration', error: error.message });
+  }
+});
+
+// POST /api/leads/sheets-config - Update Google Sheets URL & trigger sync
+router.post('/sheets-config', async (req, res) => {
+  try {
+    const { url } = req.body;
+    console.log(`Received request to update Google Sheets URL to: ${url}`);
+    const result = await sheetSyncService.configureUrl(url);
+    const updatedConfig = sheetSyncService.readConfig();
+    res.json({ 
+      success: result.success, 
+      message: result.message, 
+      data: updatedConfig 
+    });
+  } catch (error) {
+    console.error('Error updating sheets config:', error);
+    res.status(500).json({ success: false, message: 'Failed to configure Google Sheets sync', error: error.message });
+  }
+});
+
+// POST /api/leads/sheets-config/sync - Trigger immediate manual Google Sheets sync
+router.post('/sheets-config/sync', async (req, res) => {
+  try {
+    console.log('Manual Google Sheets sync requested...');
+    const result = await sheetSyncService.syncNow();
+    const updatedConfig = sheetSyncService.readConfig();
+    res.json({
+      success: result.success,
+      message: result.message,
+      data: updatedConfig
+    });
+  } catch (error) {
+    console.error('Error in manual sheets sync:', error);
+    res.status(500).json({ success: false, message: 'Failed to trigger sheets sync', error: error.message });
   }
 });
 

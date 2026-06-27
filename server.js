@@ -139,6 +139,10 @@ app.get('/health', (req, res) => {
 const invoiceFactory = require('./models/InvoiceFactory');
 // Import SupabaseQuotation for fetching quotation data
 const SupabaseQuotation = require('./models/SupabaseQuotation');
+// Import Google Sheets sync service
+const sheetSyncService = require('./services/sheetSyncService');
+// Import Meta Ads sync service
+const metaSyncService = require('./services/metaSyncService');
 
 // Function to fetch and log all invoice data
 async function fetchAndLogInvoiceData() {
@@ -199,6 +203,11 @@ async function startServer() {
       // After server has started, fetch and log all invoice and quotation data
       fetchAndLogInvoiceData();
       fetchAndLogQuotationData();
+
+      // Start Google Sheets background sync scheduler
+      sheetSyncService.startSyncInterval();
+      // Start Meta Ads background sync scheduler
+      metaSyncService.startSyncInterval();
     });
   } catch (error) {
     console.error('Failed to start server:', error);
