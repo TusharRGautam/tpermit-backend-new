@@ -1,5 +1,31 @@
-﻿const axios = require('axios');
+const axios = require('axios');
 const SupabaseLead = require('../models/SupabaseLead');
+const fs = require('fs');
+const path = require('path');
+
+const CONFIG_FILE = path.join(__dirname, '../meta_sync_config.json');
+
+// Helper: Read configuration from local JSON file
+function readConfig() {
+  try {
+    if (fs.existsSync(CONFIG_FILE)) {
+      const raw = fs.readFileSync(CONFIG_FILE, 'utf8');
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.error('Error reading meta_sync_config.json:', err.message);
+  }
+  return { active: true }; // default to true if not configured
+}
+
+// Helper: Save configuration to local JSON file
+function saveConfig(config) {
+  try {
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error writing meta_sync_config.json:', err.message);
+  }
+}
 
 let syncIntervalId = null;
 let isSyncing = false;
@@ -198,6 +224,13 @@ function startSyncInterval() {
   // Clear any existing timer
   if (syncIntervalId) {
     clearInterval(syncIntervalId);
+    syncIntervalId = null;
+  }
+
+  const config = readConfig();
+  if (!config.active) {
+    console.log('[Meta Ads Sync] Background scheduler is disabled by config.');
+    return;
   }
 
   const pageAccessToken = process.env.META_PAGE_ACCESS_TOKEN;
@@ -210,11 +243,18 @@ function startSyncInterval() {
   
   // Run initial sync cycle after short delay
   setTimeout(() => {
+    const currentConfig = readConfig();
+    if (!currentConfig.active) return;
     syncNow().catch(err => console.error('[Meta Ads Sync] Initial background sync error:', err.message));
   }, 5000);
 
   // Set 60-second sync timer
   syncIntervalId = setInterval(() => {
+    const currentConfig = readConfig();
+    if (!currentConfig.active) {
+      stopSyncInterval();
+      return;
+    }
     syncNow().catch(err => console.error('[Meta Ads Sync] Interval background sync error:', err.message));
   }, 60000);
 }
@@ -231,5 +271,7 @@ function stopSyncInterval() {
 module.exports = {
   syncNow,
   startSyncInterval,
-  stopSyncInterval
+  stopSyncInterval,
+  readConfig,
+  saveConfig
 };

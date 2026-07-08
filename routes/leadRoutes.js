@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require('axios');
 const SupabaseLead = require('../models/SupabaseLead');
 const sheetSyncService = require('../services/sheetSyncService');
+const metaSyncService = require('../services/metaSyncService');
 
 // Helper to parse Facebook field data array
 function parseMetaFieldData(fieldData) {
@@ -75,6 +76,11 @@ router.get('/', async (req, res) => {
 
 // POST /api/leads/sync - Sync/fetch historical leads from Meta Leadgen Forms
 router.post('/sync', async (req, res) => {
+  const metaConfig = metaSyncService.readConfig();
+  if (!metaConfig.active) {
+    return res.status(400).json({ success: false, message: 'Meta Lead Sync is currently STOPPED. Please start the sync service first.' });
+  }
+
   const pageAccessToken = process.env.META_PAGE_ACCESS_TOKEN;
   if (!pageAccessToken) {
     return res.status(400).json({ success: false, message: 'META_PAGE_ACCESS_TOKEN is not configured in .env' });
@@ -302,6 +308,13 @@ router.post('/webhook', async (req, res) => {
     // Acknowledge receipt immediately to Meta (must return 200 within 3 seconds)
     res.status(200).json({ success: true, message: 'Received' });
 
+    // Check if Meta sync is active
+    const metaConfig = metaSyncService.readConfig();
+    if (!metaConfig.active) {
+      console.log('[Meta Webhook] Meta leads sync is disabled. Ignoring webhook event.');
+      return;
+    }
+
     // Handle standard Meta webhook entries asynchronously
     if (body.object === 'page' && Array.isArray(body.entry)) {
       for (const entry of body.entry) {
@@ -451,6 +464,41 @@ router.post('/sheets-config/sync', async (req, res) => {
   } catch (error) {
     console.error('Error in manual sheets sync:', error);
     res.status(500).json({ success: false, message: 'Failed to trigger sheets sync', error: error.message });
+  }
+});
+
+// GET /api/leads/meta-config - Get current Meta sync active configuration
+router.get('/meta-config', (req, res) => {
+  try {
+    const config = metaSyncService.readConfig();
+    res.json({ success: true, active: config.active });
+  } catch (error) {
+    console.error('Error fetching meta sync config:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch meta sync configuration', error: error.message });
+  }
+});
+
+// POST /api/leads/meta-config - Update Meta sync active state
+router.post('/meta-config', async (req, res) => {
+  try {
+    const { active } = req.body;
+    console.log(`Setting Meta sync active configuration to: ${active}`);
+    metaSyncService.saveConfig({ active });
+    
+    if (active) {
+      metaSyncService.startSyncInterval();
+    } else {
+      metaSyncService.stopSyncInterval();
+    }
+    
+    res.json({ 
+      success: true, 
+      message: `Meta sync successfully ${active ? 'started' : 'stopped'}`, 
+      active 
+    });
+  } catch (error) {
+    console.error('Error updating meta sync config:', error);
+    res.status(500).json({ success: false, message: 'Failed to configure Meta sync status', error: error.message });
   }
 });
 
